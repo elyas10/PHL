@@ -1,6 +1,11 @@
 #include "PHLMemory.h"
+#include <io.h>
+#include <fcntl.h>
 
 Addr OffsetManager::hWnd;
+int OffsetManager::handleCRT;
+FILE * OffsetManager::fileHandle;
+HANDLE OffsetManager::handleOut;
 
 CodeCave::CodeCave() : addr(NULL),
 length(NULL)
@@ -94,13 +99,25 @@ void HexPattern::assignMask(HexCode val)
 
 OffsetManager::OffsetManager()
 {
+#ifdef _DEBUG
+	// Create a console window
+	// taken from:
+	// justcheckingonall.wordpress.com/2008/08/29/console-window-win32-app/
+
+	AllocConsole();
+
+	handleOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	handleCRT = _open_osfhandle((long)handleOut, _O_TEXT);
+	fileHandle = _fdopen(handleCRT, "w");
+	setvbuf(fileHandle, NULL, _IONBF, 1);
+#endif
 
 #pragma region start_manager
 	MODULEINFO modInfo = getModuleInfo();
 	base = (Addr)modInfo.lpBaseOfDll;
 	moduleSize = modInfo.SizeOfImage;
 
-	printLog("\nStarted...\nGetting offsets...\n");
+	printLog("\nStarted...\n\n");
 
 	hWnd = HWND_PATTERN_SEARCH_OFFSET +
 		findPattern(HexPattern({
@@ -127,22 +144,21 @@ OffsetManager::OffsetManager()
 		0x89, 0x5C, 0x24, 0x24
 	}));
 
-	/*
+
 	windowStruct = WIN_GAME_STRUCT_SEARCH_OFFSET +
 		findPattern(HexPattern({
-		0x6A, 0x00, 0x6A, 0x07,
-		0x6A, 0x00, 0x6A, 0x00,
-		0x57, 0xFF, 0xD1, 0x8B,
-		0x17, 0x8B, 0x82, 0xA4,
-		0x00, 0x00, 0x00, 0x57,
-		0xFF, 0xD0, 0x85, 0xC0
+		0x83, 0xEC, 0x3C, 0x57,
+		0x8B, 0x7D, 0x08, 0x8B,
+		0x07, 0x6A, 0x00, 0x51,
+		0x8B, 0x88, 0xAC, 0x00,
+		0x00, 0x00, 0xF3, 0x0F,
+		0x11, 0x04, 0x24, 0x6A,
+		0x00, 0x6A, 0x07
 	}));
-
-	reverseByteOrder(windowStruct);
+	//reverseByteOrder(windowStruct);
 	windowStruct = *(Addr*)windowStruct;
-	*/
-
-	windowStruct = *(Addr*)(base + 0xA05C38);
+	windowStruct = *(Addr*)windowStruct;
+	//windowStruct = *(Addr*)(base + 0xA05C38);
 	windowGameStruct = windowStruct +
 		WIN_GAME_STRUCT_OFFSET;
 
@@ -181,40 +197,42 @@ OffsetManager::OffsetManager()
 		0x55, 0x8B, 0xEC, 0x83,
 		0xE4, 0xC0, 0x83, 0xEC,
 		0x34, 0x53, 0x56
-		}));
+	}));
 
-	HexPattern acHookHP({
-		0xFF, 0xD7, 0x8A, 0x55,
-		0x00, 0x8D, 0x75, 0x01,
-		0xBF, 0x0F, 0x00, 0x00,
+	HexPattern bypassHP({
+		0x5F, 0x32, 0xC0, 0x5E,
+		0xC3,
+
+		0xE8, 0xC3, 0x13, 0x00,
 		0x00,
 
-		0xA3, 0x60, 0xB4, 0x7A,
-		0x01, 0xE8, 0x81, 0x01,
-		0x00, 0x00,
+		0x6A, 0x00, 0x6A, 0x00,
+		0x6A, 0x00,
 
-		0x0F, 0xB6, 0x45, 0x09,
-		0x83, 0xC0, 0xEF, 0x83,
-		0xF8, 0x33
+		0x68, 0x00, 0xE8, 0xC4,
+		0x00,
+
+		0x6A, 0x00, 0x6A, 0x00
 	});
 
-	acHookHP.assignMask({
-		0x01, 0x01, 0x01, 0x01,
-		0x01, 0x01, 0x01, 0x01,
+	bypassHP.assignMask({
 		0x01, 0x01, 0x01, 0x01,
 		0x01,
 
 		0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00,
+		0x00,
 
 		0x01, 0x01, 0x01, 0x01,
-		0x01, 0x01, 0x01, 0x01,
-		0x01, 0x01
+		0x01, 0x01,
+
+		0x00, 0x00, 0x00, 0x00,
+		0x00,
+
+		0x01, 0x01, 0x01, 0x01
 	});
 
-	acHook = findPattern(acHookHP);;
-	acHook -= 0x98;
+	bypass = findPattern(bypassHP);;
+	bypass -= 0x02;
 
 	keyStatePtr =
 		findPattern(HexPattern({
@@ -239,6 +257,18 @@ OffsetManager::OffsetManager()
 
 	decryptStringFunc += 0x10;
 
+	encryptedStringRegion =
+		findPattern(HexPattern({
+		0x12, 0xA2, 0x0D, 0xBA,
+		0x64, 0x0F, 0x10, 0x51,
+		0x00, 0x00, 0x00, 0x00,
+		0xB5, 0x67, 0x34, 0xB1
+	}));
+	encryptedStringRegion -= 0x10;
+
+	printLog("\nDecrypting Strings...\n");
+	printEncryptedStrings();
+	printLog("\nGetting offsets...\n");
 	printLog("Base Address: %X\n"
 		"Window Handle: %X\n"
 		"Background Patch: %X (PathOfExile.exe + %X)\n"
@@ -249,9 +279,11 @@ OffsetManager::OffsetManager()
 		"Mouse Y Address: %X (PathOfExile.exe + %X)\n"
 		"Input Handler Function: %X (PathOfExile.exe + %X)\n"
 		"Window Handler Function: %X (PathOfExile.exe + %X)\n"
-		"Anti-Cheat Function: %X (PathOfExile.exe + %X)\n"
 		"GetKeyState Function Ptr: %X (PathOfExile.exe + %X)\n"
-		"Decrypt Function Hook: %X (PathOfExile.exe + %X)\n",
+		"Bypass Code Cave: %X (PathOfExile.exe + %X)\n"
+		"Decrypt Function Hook: %X (PathOfExile.exe + %X)\n"
+		""
+		"\n",
 		base, hWnd,
 		bgPatchEntry,
 		bgPatchEntry - base,
@@ -266,20 +298,15 @@ OffsetManager::OffsetManager()
 		inputHandlerFunc - base,
 		windowHandlerFunc,
 		windowHandlerFunc - base,
-		acHook,
-		acHook - base,
 		keyStatePtr,
 		keyStatePtr - base,
+		bypass,
+		bypass - base,
 		decryptStringFunc,
 		decryptStringFunc - base);
 
 #pragma endregion start_manager
 
-}
-
-Addr OffsetManager::getACHookEntry() const
-{
-	return acHook;
 }
 
 MODULEINFO OffsetManager::getModuleInfo()
@@ -293,6 +320,79 @@ MODULEINFO OffsetManager::getModuleInfo()
 	GetModuleInformation(GetCurrentProcess(),
 		hModule, &modInfo, sizeof(MODULEINFO));
 	return modInfo;
+}
+
+void OffsetManager::printEncryptedStrings()
+{
+	BYTE * iter = (BYTE*)encryptedStringRegion;
+
+	BYTE buffer[256];
+	int bufferIndex = 0;
+
+	while ((DWORD)iter <
+		encryptedStringRegion +
+		ENCRYPTED_STRING_REGION_SIZE)
+	{
+		bufferIndex = 0;
+		while (1)
+		{
+			buffer[bufferIndex] = *(iter++);
+			if (bufferIndex)
+			{
+				if (buffer[bufferIndex] == 0x00 &&
+					buffer[bufferIndex - 1] == 0x00)
+				{
+					while (*iter == 0x00)
+					{
+						iter++;
+					}
+					decryptStringA((char*)buffer);
+					printLog("%s\n", buffer);
+					break;
+				}
+			}
+			bufferIndex++;
+		}
+	}
+}
+
+void OffsetManager::decryptStringA(char * string)
+{
+	__asm
+	{
+		mov esi, string;
+		sub esp, 0x20;
+		mov dword ptr[esp], 0xC35114C0;
+		mov dword ptr[esp + 4], 0x883ECE77;
+		mov al, 0x6B;
+		mov dword ptr[esp + 8], 0x3D7C6B4A;
+		mov dword ptr[esp + 12], 0x9B20CB4B;
+		mov dword ptr[esp + 16], 0xA797BD8B;
+		mov dword ptr[esp + 20], 0x04EFBA0F;
+		mov dword ptr[esp + 24], 0x88FE173A;
+		mov dword ptr[esp + 28], 0xB1A0186B;
+		xor ecx, ecx;
+
+	jump_1:
+		mov al, [ecx + esi];
+		test al, al;
+		jnz jump_2;
+		cmp[ecx + esi + 1], al;
+		jz jump_3;
+
+	jump_2:
+		mov edx, ecx;
+		and edx, 0x1F;
+		mov dl, byte ptr[esp + edx]
+			xor dl, al;
+		mov[ecx + esi], dl;
+		inc ecx;
+		jmp jump_1;
+
+	jump_3:
+		mov eax, esi;
+		add esp, 0x20;
+	}
 }
 
 DWORD OffsetManager::changeMemory(Addr addr, DWORD value)
@@ -378,6 +478,11 @@ Addr OffsetManager::getBGPatchEntry() const
 	return bgPatchEntry;
 }
 
+Addr OffsetManager::getBypassPatchEntry() const
+{
+	return bypass;
+}
+
 Addr OffsetManager::getWindowGameStruct() const
 {
 	return windowGameStruct;
@@ -448,8 +553,33 @@ Addr OffsetManager::findPattern(HexPattern pattern) const
 	return NULL;
 }
 
+int OffsetManager::findPattern(BYTE * source,
+	int sourceLength,
+	BYTE * pattern,
+	int patternLength) const
+{
+	bool found;
+	for (int i = 0;
+	i < sourceLength - patternLength;
+		i++)
+	{
+		found = true;
+		for (int j = 0;
+		j < patternLength && found; j++)
+		{
+			found &= pattern[j] ==
+				source[i + j];
+		}
+		if (found)
+		{
+			return i;
+		}
+	}
+	return NULL;
+}
+
 int OffsetManager::findAllPatterns(HexPattern pattern,
-	Addr * result, int resultLength)
+	Addr * result, int resultLength) const
 {
 	unsigned short resIndex = 0;
 	if (!resultLength)
@@ -489,7 +619,7 @@ void OffsetManager::hookAddr(Addr entryAddr, BYTE patchSize,
 	cc.addr = entryAddr;
 	cc.length = patchSize;
 
-	
+
 	int relJumpDist = (int)hookFunc -
 		(int)entryAddr - 0x05;
 
@@ -512,20 +642,17 @@ Addr OffsetManager::getWndProc() const
 void printLog(char * format, ...)
 {
 #ifdef _DEBUG
-	FILE * file;
-	fopen_s(&file,
-		"MemoryHookLog.txt", "a");
-
 	va_list argptr;
 	va_start(argptr, format);
-	vfprintf(file, format, argptr);
+	vfprintf(OffsetManager::fileHandle,
+		format, argptr);
 	va_end(argptr);
-
-	fclose(file);
 #endif
 }
 
 void printError(DWORD errorCode)
 {
+#ifdef _DEBUG
 	printLog("\nError Code: %p\n");
+#endif
 }

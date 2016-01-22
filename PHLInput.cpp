@@ -7,8 +7,6 @@ int InputHandler::mouseY;
 bool InputHandler::isSimulated;
 Addr InputHandler::mouseHookRetAddr;
 Addr InputHandler::decryptStringHookRetAddr;
-
-DWORD InputHandler::perm;
 DWORD InputHandler::decryptStringBuff;
 
 UINT16 * InputHandler::keyState;
@@ -24,30 +22,21 @@ InputHandler::InputHandler() :
 
 	hookKeyState();
 	enableInputInBackground();
+	enableBypass();
 
 	mouseHookRetAddr = off.getMouseHookReturn();
 	off.hookAddr(off.getMouseHookEntry(),
 		MOUSE_HOOK_CODE_CAVE_SIZE,
 		(Addr)&hookedMouse);
 
-	if (!off.getACHookEntry())
-	{
-		MessageBox(NULL, "Failed to find anti cheat", "crap", NULL);
-		Sleep(5000);
-		killPoE();
-	}
-	
-	off.hookAddr(off.getACHookEntry(),
-		AC_HOOK_CODE_CAVE_SIZE,
-		(Addr)&hookedAC);
-		
-	
 	/*
 	decryptStringHookRetAddr = off.getDecryptStringHookReturn();
 	off.hookAddr(off.getDecryptStringEntry(),
 		DECRYPT_STRING_HOOK_CODE_CAVE_SIZE,
 		(Addr)&hookedDecryptString);
-		*/
+	*/
+
+	printLog("Bypassed anti-cheat and hooked input...\n");
 		
 }
 
@@ -150,6 +139,13 @@ void InputHandler::enableInputInBackground()
 	{ 0x39, 0xF6 }).createCodeCave();
 }
 
+void InputHandler::enableBypass()
+{
+	// Change jz 5 to jmp 5 to always jump
+	CodeCave(off.getBypassPatchEntry(),
+	{ 0xEB, 0x05 }).createCodeCave();
+}
+
 void InputHandler::hookKeyState()
 {
 	Addr funcPtr = (Addr)&hookedKeyState;
@@ -185,17 +181,6 @@ __declspec(naked) void InputHandler::hookedMouse()
 		push mouseHookRetAddr;
 		ret;
 	}
-}
-
-__declspec(naked) void InputHandler::hookedAC()
-{
-	MessageBox(NULL,
-		"\n\nPath Of Exile just started its anti-cheat!"
-		"\nWe managed to stop it, "
-		"but we are terminating path of exile now!\n\n",
-		"Oh crap!", NULL);
-	Sleep(4000);
-	killPoE();
 }
 
 _declspec(naked) void InputHandler::hookedDecryptString()

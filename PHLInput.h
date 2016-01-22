@@ -37,11 +37,11 @@ private:
 	void callPoEWindowHandler(DWORD wParam, DWORD lParam,
 		DWORD message);
 	void enableInputInBackground();
+	void enableBypass();
 	void hookKeyState();
 	DWORD getMouseLoc(int x, int y);
 
 	static void hookedMouse();
-	static void hookedAC();
 	static void hookedDecryptString();
 	static SHORT WINAPI hookedKeyState(_In_ int nVirtKey);
 
@@ -53,8 +53,6 @@ private:
 	static bool isSimulated;
 	static Addr mouseHookRetAddr;
 	static Addr decryptStringHookRetAddr;
-
-	static DWORD perm;
 	static DWORD decryptStringBuff;
 
 	static UINT16 * keyState;

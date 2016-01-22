@@ -2,6 +2,7 @@
 
 void init(HINSTANCE dllHandle)
 {
+
 	InputHandler input;
 	
 	input.sendPoEMouseInput(0x200, 470, 350, 5);

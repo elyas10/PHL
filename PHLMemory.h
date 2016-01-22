@@ -10,14 +10,14 @@
 
 #define HWND_PATTERN_SEARCH_OFFSET 0x1FE
 #define BG_PATCH_PATTERN_SEARCH_OFFSET 0x74
-#define WIN_GAME_STRUCT_SEARCH_OFFSET 0x1B
+#define WIN_GAME_STRUCT_SEARCH_OFFSET 0x32
 #define WIN_GAME_STRUCT_OFFSET 0x160
 #define MOUSE_X_OFFSET 0xAE4
 #define MOUSE_Y_OFFSET 0xAE8
 
 #define MOUSE_HOOK_CODE_CAVE_SIZE 0x8
-#define AC_HOOK_CODE_CAVE_SIZE 0x9
 #define DECRYPT_STRING_HOOK_CODE_CAVE_SIZE 0x5
+#define ENCRYPTED_STRING_REGION_SIZE 0x31F
 
 typedef DWORD Addr;
 typedef std::initializer_list<BYTE> HexCode;
@@ -58,11 +58,13 @@ public:
 
 class OffsetManager
 {
+
 	Addr base;
 	DWORD moduleSize;
 
 	// "bg" means background
 	Addr bgPatchEntry;
+	Addr bypass;
 
 	Addr windowGameStruct;
 	Addr windowStruct;
@@ -71,28 +73,38 @@ class OffsetManager
 	Addr wndProc;
 	Addr mouseX;
 	Addr mouseY;
-	Addr acHook;
 	Addr mouseHook;
 	Addr keyStatePtr;
 	Addr decryptStringFunc;
+	Addr encryptedStringRegion;
+
+	MODULEINFO getModuleInfo();
+	void printEncryptedStrings();
+	void decryptStringA(char * string);
+	// TODO
+	// AT PathOfExile.exe + 25EAB0
+	void decryptStringB(char * string);
 
 	Addr findPattern(HexPattern pattern) const;
+	int OffsetManager::findPattern(BYTE * source,
+		int sourceLength,
+		BYTE * pattern,
+		int patternLength) const;
 	int findAllPatterns(HexPattern pattern,
 		Addr * result,
-		int resultLength);
-	MODULEINFO getModuleInfo();
+		int resultLength) const;
 
 public:
 	OffsetManager();
 	Addr getBaseAddr() const;
 	Addr getWindowHandle() const;
 	Addr getBGPatchEntry() const;
+	Addr getBypassPatchEntry() const;
 	Addr getWindowGameStruct() const;
 	Addr getWindowStruct() const;
 	Addr getInputHandlerFunc() const;
 	Addr getWindowHandlerFunc() const;
 	Addr getWndProc() const;
-	Addr getACHookEntry() const;
 	Addr getMouseHookEntry() const;
 	Addr getMouseHookReturn() const;
 	Addr getKeyStatePtr() const;
@@ -105,9 +117,14 @@ public:
 	void hookAddr(Addr entryAddr, BYTE patchSize,
 		Addr hookFunc);
 
+	// Stuff for console window
+	static int handleCRT;
+	static FILE * fileHandle;
+	static HANDLE handleOut;
 	static Addr hWnd;
 
 };
 
 void printLog(char * format, ...);
 void printError(DWORD errorCode);
+
