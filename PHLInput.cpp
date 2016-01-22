@@ -14,15 +14,17 @@ UINT16 * InputHandler::keyState;
 InputHandler::InputHandler() :
 	off(), isInputLocked(false)
 {
-	keyState = (UINT16 *)malloc(256 * sizeof(UINT16));
-	for (int i = 0; i < 256; i++)
+	keyState = (UINT16 *)malloc(0xFF * sizeof(UINT16));
+	for (unsigned short i = 0;
+		i < 0xFF; i++)
 	{
-		*(keyState + i) = 0;
+		keyState[i] = 0x0000;
 	}
 
 	hookKeyState();
 	enableInputInBackground();
-	enableBypass();
+	enableBypassA();
+	enableBypassB();
 
 	mouseHookRetAddr = off.getMouseHookReturn();
 	off.hookAddr(off.getMouseHookEntry(),
@@ -37,7 +39,7 @@ InputHandler::InputHandler() :
 	*/
 
 	printLog("Bypassed anti-cheat and hooked input...\n");
-		
+
 }
 
 void InputHandler::sendPoEMouseInput(UINT MSG,
@@ -49,7 +51,8 @@ void InputHandler::sendPoEMouseInput(UINT MSG,
 
 InputHandler::~InputHandler()
 {
-	free(keyState);
+	// The destructor gets called cause the dll ends!
+	//free(keyState);
 }
 
 void InputHandler::lockInput()
@@ -139,11 +142,39 @@ void InputHandler::enableInputInBackground()
 	{ 0x39, 0xF6 }).createCodeCave();
 }
 
-void InputHandler::enableBypass()
+void InputHandler::enableBypassA()
 {
 	// Change jz 5 to jmp 5 to always jump
-	CodeCave(off.getBypassPatchEntry(),
+	CodeCave(off.getBypassAPatchEntry(),
 	{ 0xEB, 0x05 }).createCodeCave();
+}
+
+void InputHandler::enableBypassB()
+{
+	/*
+		Change jnz to jmp so it always jumps
+		25EA07
+
+		To do this we change:
+			0F 85 9E 00 00 00
+		To:
+			E9 9F 00 00 00 90
+
+		It changes from 9E to 9F because we jump
+		relatively in bytes, and since we add a nop
+		after, we have to jump that extra nop byte
+	*/
+
+	Addr entry = off.getBypassBPatchEntry();
+	DWORD jumpDist = off.readMemory(entry + 0x2) + 0x1;
+
+	BYTE * bytes = (BYTE*)(&jumpDist);
+
+	CodeCave(entry,
+	{ 0xE9,
+	bytes[0], bytes[1],
+	bytes[2], bytes[3],
+	0x90 }).createCodeCave();
 }
 
 void InputHandler::hookKeyState()

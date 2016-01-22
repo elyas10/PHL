@@ -1,13 +1,23 @@
 #include "PHLInput.h"
 
+void clickInputThread(InputHandler * input)
+{
+	int x = 1, y = 1;
+
+	while (x != 0 && y != 0)
+	{
+		scanLog("%d, %d", &x, &y);
+		input->sendPoEMouseInput(0x201, x, y, 5);
+	}
+	
+}
+
 void init(HINSTANCE dllHandle)
 {
 
-	InputHandler input;
-	
-	input.sendPoEMouseInput(0x200, 470, 350, 5);
-	
-
+	InputHandler * input = new InputHandler();
+	clickInputThread(input);
+	//CreateRemoteThread();
 }
 
 BOOL WINAPI DllMain(

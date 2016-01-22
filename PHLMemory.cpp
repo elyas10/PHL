@@ -3,9 +3,10 @@
 #include <fcntl.h>
 
 Addr OffsetManager::hWnd;
-int OffsetManager::handleCRT;
-FILE * OffsetManager::fileHandle;
+FILE * OffsetManager::fileHandleOut;
+FILE * OffsetManager::fileHandleIn;
 HANDLE OffsetManager::handleOut;
+HANDLE OffsetManager::handleIn;
 
 CodeCave::CodeCave() : addr(NULL),
 length(NULL)
@@ -106,10 +107,18 @@ OffsetManager::OffsetManager()
 
 	AllocConsole();
 
+	int crt = 0;
+
 	handleOut = GetStdHandle(STD_OUTPUT_HANDLE);
-	handleCRT = _open_osfhandle((long)handleOut, _O_TEXT);
-	fileHandle = _fdopen(handleCRT, "w");
-	setvbuf(fileHandle, NULL, _IONBF, 1);
+	crt = _open_osfhandle((long)handleOut, _O_TEXT);
+	fileHandleOut = _fdopen(crt, "w");
+	setvbuf(fileHandleOut, NULL, _IONBF, 1);
+
+	handleIn = GetStdHandle(STD_INPUT_HANDLE);
+	crt = _open_osfhandle((long)handleIn, _O_TEXT);
+	fileHandleIn = _fdopen(crt, "r");
+	setvbuf(fileHandleIn, NULL, _IONBF, 128);
+
 #endif
 
 #pragma region start_manager
@@ -199,7 +208,7 @@ OffsetManager::OffsetManager()
 		0x34, 0x53, 0x56
 	}));
 
-	HexPattern bypassHP({
+	HexPattern bypassAHexPattern({
 		0x5F, 0x32, 0xC0, 0x5E,
 		0xC3,
 
@@ -215,7 +224,7 @@ OffsetManager::OffsetManager()
 		0x6A, 0x00, 0x6A, 0x00
 	});
 
-	bypassHP.assignMask({
+	bypassAHexPattern.assignMask({
 		0x01, 0x01, 0x01, 0x01,
 		0x01,
 
@@ -231,8 +240,17 @@ OffsetManager::OffsetManager()
 		0x01, 0x01, 0x01, 0x01
 	});
 
-	bypass = findPattern(bypassHP);;
-	bypass -= 0x02;
+	bypassA = findPattern(bypassAHexPattern);;
+	bypassA -= 0x02;
+
+	bypassB =
+		findPattern(HexPattern({
+		0x57, 0x6A, 0x04, 0x68,
+		0x00, 0x10, 0x00, 0x00,
+		0x8D, 0x44, 0x24, 0x0C,
+		0x50, 0x6A, 0x00
+	}));
+	bypassB -= 0x18;
 
 	keyStatePtr =
 		findPattern(HexPattern({
@@ -280,7 +298,8 @@ OffsetManager::OffsetManager()
 		"Input Handler Function: %X (PathOfExile.exe + %X)\n"
 		"Window Handler Function: %X (PathOfExile.exe + %X)\n"
 		"GetKeyState Function Ptr: %X (PathOfExile.exe + %X)\n"
-		"Bypass Code Cave: %X (PathOfExile.exe + %X)\n"
+		"BypassA Code Cave: %X (PathOfExile.exe + %X)\n"
+		"BypassB Code Cave: %X (PathOfExile.exe + %X)\n"
 		"Decrypt Function Hook: %X (PathOfExile.exe + %X)\n"
 		""
 		"\n",
@@ -300,8 +319,10 @@ OffsetManager::OffsetManager()
 		windowHandlerFunc - base,
 		keyStatePtr,
 		keyStatePtr - base,
-		bypass,
-		bypass - base,
+		bypassA,
+		bypassA - base,
+		bypassB,
+		bypassB - base,
 		decryptStringFunc,
 		decryptStringFunc - base);
 
@@ -478,9 +499,14 @@ Addr OffsetManager::getBGPatchEntry() const
 	return bgPatchEntry;
 }
 
-Addr OffsetManager::getBypassPatchEntry() const
+Addr OffsetManager::getBypassAPatchEntry() const
 {
-	return bypass;
+	return bypassA;
+}
+
+Addr OffsetManager::getBypassBPatchEntry() const
+{
+	return bypassB;
 }
 
 Addr OffsetManager::getWindowGameStruct() const
@@ -644,7 +670,18 @@ void printLog(char * format, ...)
 #ifdef _DEBUG
 	va_list argptr;
 	va_start(argptr, format);
-	vfprintf(OffsetManager::fileHandle,
+	vfprintf(OffsetManager::fileHandleOut,
+		format, argptr);
+	va_end(argptr);
+#endif
+}
+
+void scanLog(char * format, ...)
+{
+#ifdef _DEBUG
+	va_list argptr;
+	va_start(argptr, format);
+	vfscanf(OffsetManager::fileHandleIn,
 		format, argptr);
 	va_end(argptr);
 #endif

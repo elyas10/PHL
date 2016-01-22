@@ -64,7 +64,8 @@ class OffsetManager
 
 	// "bg" means background
 	Addr bgPatchEntry;
-	Addr bypass;
+	Addr bypassA;
+	Addr bypassB;
 
 	Addr windowGameStruct;
 	Addr windowStruct;
@@ -99,7 +100,8 @@ public:
 	Addr getBaseAddr() const;
 	Addr getWindowHandle() const;
 	Addr getBGPatchEntry() const;
-	Addr getBypassPatchEntry() const;
+	Addr getBypassAPatchEntry() const;
+	Addr getBypassBPatchEntry() const;
 	Addr getWindowGameStruct() const;
 	Addr getWindowStruct() const;
 	Addr getInputHandlerFunc() const;
@@ -118,13 +120,15 @@ public:
 		Addr hookFunc);
 
 	// Stuff for console window
-	static int handleCRT;
-	static FILE * fileHandle;
+	static FILE * fileHandleOut;
+	static FILE * fileHandleIn;
 	static HANDLE handleOut;
+	static HANDLE handleIn;
 	static Addr hWnd;
 
 };
 
 void printLog(char * format, ...);
+void scanLog(char * format, ...);
 void printError(DWORD errorCode);
 

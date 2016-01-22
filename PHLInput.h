@@ -37,7 +37,8 @@ private:
 	void callPoEWindowHandler(DWORD wParam, DWORD lParam,
 		DWORD message);
 	void enableInputInBackground();
-	void enableBypass();
+	void enableBypassA();
+	void enableBypassB();
 	void hookKeyState();
 	DWORD getMouseLoc(int x, int y);
 
