@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <initializer_list>
 
-#define POE_MODULE_NAME "PathOfExile.exe"
 #define MAX_ARRAY_SIZE 64
 
 #define HWND_PATTERN_SEARCH_OFFSET 0x1FE

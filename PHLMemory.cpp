@@ -333,7 +333,7 @@ OffsetManager::OffsetManager()
 MODULEINFO OffsetManager::getModuleInfo()
 {
 	MODULEINFO modInfo = { 0 };
-	HMODULE hModule = GetModuleHandle(POE_MODULE_NAME);
+	HMODULE hModule = GetModuleHandle(NULL);
 	if (hModule == 0)
 	{
 		printError(0x1400);
