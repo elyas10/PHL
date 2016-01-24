@@ -100,7 +100,7 @@ void HexPattern::assignMask(HexCode val)
 
 OffsetManager::OffsetManager()
 {
-#ifdef _DEBUG
+
 	// Create a console window
 	// taken from:
 	// justcheckingonall.wordpress.com/2008/08/29/console-window-win32-app/
@@ -118,8 +118,6 @@ OffsetManager::OffsetManager()
 	crt = _open_osfhandle((long)handleIn, _O_TEXT);
 	fileHandleIn = _fdopen(crt, "r");
 	setvbuf(fileHandleIn, NULL, _IONBF, 128);
-
-#endif
 
 #pragma region start_manager
 	MODULEINFO modInfo = getModuleInfo();
@@ -667,29 +665,23 @@ Addr OffsetManager::getWndProc() const
 
 void printLog(char * format, ...)
 {
-#ifdef _DEBUG
 	va_list argptr;
 	va_start(argptr, format);
 	vfprintf(OffsetManager::fileHandleOut,
 		format, argptr);
 	va_end(argptr);
-#endif
 }
 
 void scanLog(char * format, ...)
 {
-#ifdef _DEBUG
 	va_list argptr;
 	va_start(argptr, format);
 	vfscanf(OffsetManager::fileHandleIn,
 		format, argptr);
 	va_end(argptr);
-#endif
 }
 
 void printError(DWORD errorCode)
 {
-#ifdef _DEBUG
 	printLog("\nError Code: %p\n");
-#endif
 }
