@@ -18,6 +18,26 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="codefiles\DLLMain.cpp" />
+    <ClCompile Include="codefiles\hacks\PHLBypass.cpp" />
+    <ClCompile Include="codefiles\hacks\PHLInput.cpp" />
+    <ClCompile Include="codefiles\hacks\PHLMap.cpp" />
+    <ClCompile Include="codefiles\hacks\PHLPlayer.cpp" />
+    <ClCompile Include="codefiles\hacks\PHLWindow.cpp" />
+    <ClCompile Include="codefiles\PHLConsole.cpp" />
+    <ClCompile Include="codefiles\PHLMemory.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="codefiles\hacks\PHLBypass.h" />
+    <ClInclude Include="codefiles\hacks\PHLInput.h" />
+    <ClInclude Include="codefiles\hacks\PHLMap.h" />
+    <ClInclude Include="codefiles\hacks\PHLPlayer.h" />
+    <ClInclude Include="codefiles\hacks\PHLStringDecryptor.h" />
+    <ClInclude Include="codefiles\hacks\PHLWindow.h" />
+    <ClInclude Include="codefiles\PHLConsole.h" />
+    <ClInclude Include="codefiles\PHLMemory.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{E2E7BAA1-4308-4DE6-8D69-41BE61D692CF}</ProjectGuid>
     <RootNamespace>PHL</RootNamespace>
@@ -77,10 +97,10 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <GenerateDebugInformation>No</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
     </Link>
     <Link>
-      <ProgramDatabaseFile>$(TargetName).pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -102,8 +122,8 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>No</GenerateDebugInformation>
-      <ProgramDatabaseFile>$(TargetName).pdb</ProgramDatabaseFile>
+      <GenerateDebugInformation>Debug</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -119,15 +139,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="DLLMain.cpp" />
-    <ClCompile Include="PHLInput.cpp" />
-    <ClCompile Include="PHLMemory.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="PHLInput.h" />
-    <ClInclude Include="PHLMemory.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
