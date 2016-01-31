@@ -2,7 +2,7 @@
 
 PHLPlayer::PHLPlayer ()
 {
-	gameStruct = WIN_GAME_STRUCT_SEARCH_OFFSET +
+	gameStruct = GAME_STRUCT_SEARCH_OFFSET +
 		PHLMemory::Instance ()->findPattern (
 			HexPattern ({
 		0x83, 0xEC, 0x3C, 0x57,
@@ -15,16 +15,53 @@ PHLPlayer::PHLPlayer ()
 	}));
 
 	gameStruct = *(Addr*)gameStruct;
-	playerStruct = *(Addr*)gameStruct +
-		WIN_GAME_STRUCT_OFFSET;
 
-	mouseX = playerStruct +
+	gameStruct = *(Addr*)gameStruct +
+		GAME_STRUCT_OFFSET;
+
+	playerStruct = gameStruct +
+		PLAYER_STRUCT_OFFSET;
+
+	mouseX = gameStruct +
 		MOUSE_X_OFFSET;
-	mouseY = playerStruct +
+	mouseY = gameStruct +
 		MOUSE_Y_OFFSET;
 }
 
 void PHLPlayer::printAddr ()
 {
 	Addr base = PHLMemory::Instance ()->base;
+	PHLConsole::printLog ("Game Struct:            %X, PathOfExile.exe + %X\n"
+						  "Player Struct:          %X, PathOfExile.exe + %X\n"
+						  "Mouse X Address:        %X, PathOfExile.exe + %X\n"
+						  "Mouse Y Address:        %X, PathOfExile.exe + %X\n",
+						  gameStruct, gameStruct - base,
+						  playerStruct, playerStruct - base,
+						  mouseX, mouseX - base,
+						  mouseY, mouseY - base);
+}
+
+Addr PHLPlayer::getPlayerStatAddr ()
+{
+	Addr playerStat = playerStruct;
+
+	if (!isAddressValid (playerStat))
+	{
+		PHLConsole::printError ("Player Struct Ptr is invalid, bad address or "
+								"player stats haven't loaded yet");
+		return NULL;
+	}
+
+	playerStat = *(Addr*)(playerStat) +
+		PLAYER_STAT_STRUCT_OFFSET_1;
+
+	if (!isAddressValid (playerStat))
+	{
+		PHLConsole::printError ("Player Struct Ptr is invalid, bad address or "
+								"player stats haven't loaded yet");
+		return NULL;
+	}
+
+	return *(Addr*)(playerStat) +
+		PLAYER_STAT_STRUCT_OFFSET_2;
 }

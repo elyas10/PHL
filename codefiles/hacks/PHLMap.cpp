@@ -40,6 +40,6 @@ PHLMap::PHLMap ()
 void PHLMap::printAddr ()
 {
 	Addr base = PHLMemory::Instance ()->base;
-	PHLConsole::printLog ("MapHack Offset: %X, PathOfExile.exe + %X\n",
+	PHLConsole::printLog ("Map Hack Offset:        %X, PathOfExile.exe + %X\n",
 						mapHackOff, mapHackOff - base);
 }

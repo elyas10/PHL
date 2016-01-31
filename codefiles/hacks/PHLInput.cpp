@@ -105,8 +105,8 @@ void PHLInput::callPoEInputHandler (DWORD wParam, DWORD lParam,
 									DWORD message)
 {
 	Addr hWnd = PHLMemory::Instance ()->hWnd;
-	Addr playerStruct =
-		PHLPlayer::Instance ()->playerStruct;
+	Addr gameStruct =
+		PHLPlayer::Instance ()->gameStruct;
 	Addr addr = inputHandlerEntry;
 
 	__asm
@@ -114,7 +114,7 @@ void PHLInput::callPoEInputHandler (DWORD wParam, DWORD lParam,
 		push wParam;
 		push message;
 		push hWnd;
-		push playerStruct;
+		push gameStruct;
 		mov eax, lParam;
 		call addr;
 	}
@@ -246,10 +246,10 @@ void PHLInput::killPoE ()
 void PHLInput::printAddr ()
 {
 	Addr base = PHLMemory::Instance ()->base;
-	PHLConsole::printLog ("Input Function: %X, PathOfExile + %X\n"
-						  "Background input patch: %X, PathOfExile + %X\n"
-						  "Mouse Hook: %X, PathOfExile + %X\n"
-						  "Key State Ptr: %X, PathOfExile + %X\n",
+	PHLConsole::printLog ("Input Function:         %X, PathOfExile + %X\n"
+						  "BG input patch:         %X, PathOfExile + %X\n"
+						  "Mouse Hook:             %X, PathOfExile + %X\n"
+						  "Key State Ptr:          %X, PathOfExile + %X\n",
 						  inputHandlerEntry, inputHandlerEntry - base,
 						  bgPatchEntry, bgPatchEntry - base,
 						  mouseHook, mouseHook - base,

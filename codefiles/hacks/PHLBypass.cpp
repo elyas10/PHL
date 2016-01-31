@@ -135,9 +135,9 @@ PHLBypass * PHLBypass::Instance ()
 void PHLBypass::printAddr ()
 {
 	Addr base = PHLMemory::Instance ()->base;
-	PHLConsole::printLog ("Bypass A: %X, PathOfExile + %X\n"
-						  "Bypass B: %X, PathOfExile + %X\n"
-						  "Bypass C: %X, PathOfExile + %X\n",
+	PHLConsole::printLog ("Bypass A:               %X, PathOfExile + %X\n"
+						  "Bypass B:               %X, PathOfExile + %X\n"
+						  "Bypass C:               %X, PathOfExile + %X\n",
 						  bypassA, bypassA - base,
 						  bypassB, bypassB - base,
 						  bypassC, bypassC - base);
