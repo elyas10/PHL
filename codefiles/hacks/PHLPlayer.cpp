@@ -2,21 +2,15 @@
 
 PHLPlayer::PHLPlayer ()
 {
-	gameStruct = GAME_STRUCT_SEARCH_OFFSET +
+	baseStruct = GAME_STRUCT_SEARCH_OFFSET +
 		PHLMemory::Instance ()->findPattern (
-			HexPattern ({
-		0x83, 0xEC, 0x3C, 0x57,
-		0x8B, 0x7D, 0x08, 0x8B,
-		0x07, 0x6A, 0x00, 0x51,
-		0x8B, 0x88, 0xAC, 0x00,
-		0x00, 0x00, 0xF3, 0x0F,
-		0x11, 0x04, 0x24, 0x6A,
-		0x00, 0x6A, 0x07
-	}));
+			HexPattern ("A1 ?? ?? ?? ?? 89 B0 B4 "
+						"18 00 00 E8 ?? ?? ?? ?? "
+						"89 45 4C"));
 
-	gameStruct = *(Addr*)gameStruct;
+	baseStruct = *(Addr*)baseStruct;
 
-	gameStruct = *(Addr*)gameStruct +
+	gameStruct = *(Addr*)baseStruct +
 		GAME_STRUCT_OFFSET;
 
 	playerStruct = gameStruct +
@@ -31,14 +25,17 @@ PHLPlayer::PHLPlayer ()
 void PHLPlayer::printAddr ()
 {
 	Addr base = PHLMemory::Instance ()->base;
-	PHLConsole::printLog ("Game Struct:            %X, PathOfExile.exe + %X\n"
-						  "Player Struct:          %X, PathOfExile.exe + %X\n"
-						  "Mouse X Address:        %X, PathOfExile.exe + %X\n"
-						  "Mouse Y Address:        %X, PathOfExile.exe + %X\n",
-						  gameStruct, gameStruct - base,
-						  playerStruct, playerStruct - base,
-						  mouseX, mouseX - base,
-						  mouseY, mouseY - base);
+	PHLConsole::printLog (
+		"Base Struct:            %.8X, PathOfExile.exe + %.8X\n"
+		"Game Struct:            %.8X, PathOfExile.exe + %.8X\n"
+		"Player Struct:          %.8X, PathOfExile.exe + %.8X\n"
+		"Mouse X Address:        %.8X, PathOfExile.exe + %.8X\n"
+		"Mouse Y Address:        %.8X, PathOfExile.exe + %.8X\n",
+		baseStruct, baseStruct - base,
+		gameStruct, gameStruct - base,
+		playerStruct, playerStruct - base,
+		mouseX, mouseX - base,
+		mouseY, mouseY - base);
 }
 
 Addr PHLPlayer::getPlayerStatAddr ()
@@ -52,7 +49,7 @@ Addr PHLPlayer::getPlayerStatAddr ()
 		return NULL;
 	}
 
-	playerStat = *(Addr*)(playerStat) +
+	playerStat = *(Addr*)(playerStat)+
 		PLAYER_STAT_STRUCT_OFFSET_1;
 
 	if (!isAddressValid (playerStat))
@@ -62,6 +59,6 @@ Addr PHLPlayer::getPlayerStatAddr ()
 		return NULL;
 	}
 
-	return *(Addr*)(playerStat) +
+	return *(Addr*)(playerStat)+
 		PLAYER_STAT_STRUCT_OFFSET_2;
 }

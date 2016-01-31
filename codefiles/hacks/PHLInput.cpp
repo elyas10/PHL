@@ -246,12 +246,13 @@ void PHLInput::killPoE ()
 void PHLInput::printAddr ()
 {
 	Addr base = PHLMemory::Instance ()->base;
-	PHLConsole::printLog ("Input Function:         %X, PathOfExile + %X\n"
-						  "BG input patch:         %X, PathOfExile + %X\n"
-						  "Mouse Hook:             %X, PathOfExile + %X\n"
-						  "Key State Ptr:          %X, PathOfExile + %X\n",
-						  inputHandlerEntry, inputHandlerEntry - base,
-						  bgPatchEntry, bgPatchEntry - base,
-						  mouseHook, mouseHook - base,
-						  keyStatePtr, keyStatePtr - base);
+	PHLConsole::printLog (
+		"Input Function:         %.8X, PathOfExile + %.8X\n"
+		"BG input patch:         %.8X, PathOfExile + %.8X\n"
+		"Mouse Hook:             %.8X, PathOfExile + %.8X\n"
+		"Key State Ptr:          %.8X, PathOfExile + %.8X\n",
+		inputHandlerEntry, inputHandlerEntry - base,
+		bgPatchEntry, bgPatchEntry - base,
+		mouseHook, mouseHook - base,
+		keyStatePtr, keyStatePtr - base);
 }

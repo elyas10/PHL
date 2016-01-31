@@ -11,19 +11,25 @@ bool isAddressValid (Addr addr)
 	return true;
 }
 
-CodeCave::CodeCave () : addr (NULL),
-length (NULL)
+void CodeCave::init ()
 {
+	this->length = 0;
+	this->addr = NULL;
 	memset (newOpcodes, 0x90,
 			PHL_MAX_ARRAY_SIZE);
 	memset (oldOpcodes, 0x90,
 			PHL_MAX_ARRAY_SIZE);
 }
 
+CodeCave::CodeCave ()
+{
+	init ();
+}
+
 CodeCave::CodeCave (Addr addr,
 					HexCode newOp)
 {
-	CodeCave ();
+	init ();
 	if (!isAddressValid (addr))
 	{
 		PHLConsole::printError ("Failed to create code cave variable, "
@@ -88,17 +94,89 @@ void CodeCave::assignNewOpCodes (HexCode newOp)
 	length = (BYTE)newOp.size ();
 }
 
-HexPattern::HexPattern ()
+void HexPattern::init ()
 {
+	this->length = 0;
+	memset (pattern, 0x90,
+			PHL_MAX_ARRAY_SIZE);
 	memset (mask, 0x1,
 			PHL_MAX_ARRAY_SIZE);
 }
 
+HexPattern::HexPattern ()
+{
+	init ();
+}
+
 HexPattern::HexPattern (HexCode val)
 {
-	HexPattern ();
+	init ();
 	length = (BYTE)val.size ();
 	assignPattern (val);
+}
+
+HexPattern::HexPattern (std::string aob)
+{
+	init ();
+	std::vector<char> string;
+	std::string::iterator it = aob.begin ();
+
+	// Loop to remove spaces and such
+	while (it != aob.end())
+	{
+		char buffer = *it;
+		if (buffer == '?' ||
+			buffer == 'x' ||
+			buffer == 'X' ||
+			(buffer >= 'a' && buffer <= 'f') ||
+			(buffer >= 'A' && buffer <= 'F') ||
+			(buffer >= '0' && buffer <= '9'))
+		{
+			string.push_back (buffer);
+		}
+		it++;
+	}
+
+	for (int i = 0; i < string.size (); i++, length++)
+	{
+		if (string[i] == '?' ||
+			string[i] == 'x' ||
+			string[i] == 'X')
+		{
+			i++;
+			if (string[i] != '?' &&
+				string[i] != 'x' &&
+				string[i] != 'X')
+			{
+				PHLConsole::printError ("Invalid string of "
+										"bytes given for "
+										"the hex pattern!");
+			}
+			mask[i / 2] = 0x0;
+		}
+		else
+		{
+			BYTE buffer;
+
+			std::string charString1 (1, string[i]);
+			buffer = std::stoi (charString1, nullptr, 16);
+			buffer = buffer << 4;
+
+			i++;
+			if (string[i] == '?' ||
+				string[i] == 'x' ||
+				string[i] == 'X')
+			{
+				PHLConsole::printError ("Invalid string of "
+										"bytes given for "
+										"the hex pattern!");
+			}
+
+			std::string charString2 (1, string[i]);
+			buffer = buffer | std::stoi (charString2, nullptr, 16);
+			pattern[i / 2] = buffer;
+		}
+	}
 }
 
 void HexPattern::assignMask (HexCode val)

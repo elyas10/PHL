@@ -23,19 +23,20 @@ typedef std::initializer_list<BYTE> HexCode;
 
 class CodeCave
 {
+	void init ();
 public:
-	CodeCave();
+	CodeCave ();
 	// addr - starting location
 	// newOp - opcodes to change to
 	// Size of change will be determined
 	// by size of newOp
-	CodeCave(Addr addr,
-		HexCode newOp);
+	CodeCave (Addr addr,
+			  HexCode newOp);
 
 	// Applies the memory change
 	// Returns false if fails, true if success
-	bool createCodeCave();
-	void assignNewOpCodes(HexCode newOp);
+	bool createCodeCave ();
+	void assignNewOpCodes (HexCode newOp);
 
 	Addr addr;
 	BYTE newOpcodes[PHL_MAX_ARRAY_SIZE];
@@ -45,20 +46,24 @@ public:
 
 class HexPattern
 {
+	void init ();
 public:
 	// Null constructor, avoid if can
-	HexPattern();
+	HexPattern ();
 
 	// Takes in array of numbers
 	// in an initializer list as a constructor
-	HexPattern(HexCode val);
+	HexPattern (HexCode val);
+
+	// Takes in a cheat engine like string
+	HexPattern (std::string aob);
 
 	// Zero is mask,
 	// Non-zero is no mask
-	void assignMask(HexCode val);
+	void assignMask (HexCode val);
 	// Use when using null constructor
 	// Or if you want to change pattern
-	void assignPattern(HexCode val);
+	void assignPattern (HexCode val);
 
 	BYTE length;
 	BYTE mask[PHL_MAX_ARRAY_SIZE];
@@ -81,7 +86,7 @@ private:
 
 public:
 	// Initializes member variables
-	static PHLMemory * Instance();
+	static PHLMemory * Instance ();
 
 	// Base address of process
 	Addr base;
@@ -92,31 +97,31 @@ public:
 
 	// Flips byte order for changing little endian
 	// to big endian and vice-versa
-	static void reverseByteOrder(Addr& addr);
+	static void reverseByteOrder (Addr& addr);
 
 	// Changes the first four bytes of the address
 	// to the value
 	// Returns the old memory value
-	static DWORD changeMemory(Addr addr, DWORD value);
+	static DWORD changeMemory (Addr addr, DWORD value);
 
 	// Reads first four bytes at address
 	// Returns first four bytes at address
-	static DWORD readMemory(Addr addr);
+	static DWORD readMemory (Addr addr);
 
 	// Uses JMP (E9) to jump to the function
 	// Needs at least five bytes to work!
-	static void hookAddr(Addr entryAddr, BYTE patchSize,
-		Addr hookFunc);
+	static void hookAddr (Addr entryAddr, BYTE patchSize,
+						  Addr hookFunc);
 
 	// Finds first occurrence of the hex pattern
 	// Returns address to the beginning of the pattern found
 	// If not found will give an error and return null
-	static Addr findPattern(HexPattern pattern);
+	static Addr findPattern (HexPattern pattern);
 	// A more generic version of the function above
-	static int findPattern(BYTE * source,
-		int sourceLength,
-		BYTE * pattern,
-		int patternLength);
+	static int findPattern (BYTE * source,
+							int sourceLength,
+							BYTE * pattern,
+							int patternLength);
 };
 
 /*

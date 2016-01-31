@@ -2,7 +2,7 @@
 
 #include "../PHLMemory.h"
 
-#define GAME_STRUCT_SEARCH_OFFSET 0x32
+#define GAME_STRUCT_SEARCH_OFFSET 0x1
 #define PLAYER_STRUCT_OFFSET 0x1720
 #define GAME_STRUCT_OFFSET 0x160
 #define MOUSE_X_OFFSET 0xAE4
@@ -54,6 +54,7 @@ public:
 	// Cool
 	Addr mouseX;
 	Addr mouseY;
+	Addr baseStruct;
 	Addr gameStruct;
 	Addr playerStruct;
 };
