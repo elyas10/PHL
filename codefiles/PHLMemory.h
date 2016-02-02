@@ -9,7 +9,7 @@
 
 #include "PHLConsole.h"
 
-#define PHL_MAX_ARRAY_SIZE 64
+#define PHL_MAX_ARRAY_SIZE 128
 #define HWND_PATTERN_SEARCH_OFFSET 0x1FE
 
 typedef DWORD Addr;
@@ -106,7 +106,7 @@ public:
 
 	// Reads first four bytes at address
 	// Returns first four bytes at address
-	static DWORD readMemory (Addr addr);
+	static DWORD readAddr (Addr addr);
 
 	// Uses JMP (E9) to jump to the function
 	// Needs at least five bytes to work!

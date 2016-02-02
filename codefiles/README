@@ -1,0 +1,16 @@
+This project requires
+	- DirectX SDK
+	- Visual Studio 2015
+
+Things that need to be done:
+	- Manually add stat id codes as enum to PHLPlayer.h
+		- (I already started a few codes)
+	- Figure out which flask is in which slot
+	- Internal D3D overlay for showing mouse pos and other debugging
+		- Only have the console window for debug release
+		- Have this d3d overlay toggled with insert
+	- Figure out how to talk to NPC's, via their location or calling function
+	- Add full bright
+		- easy
+	- Figure out whether in main menu or in-game
+	- Figure out what map currently in

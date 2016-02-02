@@ -19,6 +19,9 @@
     <ClCompile Include="codefiles\hacks\PHLMap.cpp">
       <Filter>hacks</Filter>
     </ClCompile>
+    <ClCompile Include="codefiles\hacks\PHLD3DRender.cpp">
+      <Filter>hacks</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="codefiles\PHLConsole.h" />
@@ -39,6 +42,9 @@
       <Filter>hacks</Filter>
     </ClInclude>
     <ClInclude Include="codefiles\hacks\PHLWindow.h">
+      <Filter>hacks</Filter>
+    </ClInclude>
+    <ClInclude Include="codefiles\hacks\PHLD3DRender.h">
       <Filter>hacks</Filter>
     </ClInclude>
   </ItemGroup>

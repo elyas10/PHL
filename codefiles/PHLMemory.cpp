@@ -137,7 +137,8 @@ HexPattern::HexPattern (std::string aob)
 		it++;
 	}
 
-	for (int i = 0; i < string.size (); i++, length++)
+	for (unsigned int i = 0;
+	i < string.size (); i++, length++)
 	{
 		if (string[i] == '?' ||
 			string[i] == 'x' ||
@@ -279,7 +280,7 @@ DWORD PHLMemory::changeMemory (Addr addr, DWORD value)
 	return oldVal;
 }
 
-DWORD PHLMemory::readMemory (Addr addr)
+DWORD PHLMemory::readAddr (Addr addr)
 {
 
 	if (!isAddressValid (addr))
@@ -373,7 +374,14 @@ Addr PHLMemory::findPattern (HexPattern pattern)
 	PHLConsole::printError ("Failed to find pattern:");
 	for (unsigned short i = 0; i < length - 1; i++)
 	{
-		PHLConsole::printLog ("%x, ", pattern.pattern[i]);
+		if (pattern.mask[i])
+		{
+			PHLConsole::printLog ("%x, ", pattern.pattern[i]);
+		}
+		else
+		{
+			PHLConsole::printLog ("??, ", pattern.pattern[i]);
+		}
 	}
 	PHLConsole::printLog ("%x !!!", pattern.pattern[length - 1]);
 

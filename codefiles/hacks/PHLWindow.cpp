@@ -21,5 +21,5 @@ PHLWindow::PHLWindow ()
 
 void PHLWindow::printAddr ()
 {
-	PHLConsole::printLog ("Window Handle: %X", hWnd);
+	PHLConsole::printLog ("Window Handle:          %.8X", hWnd);
 }

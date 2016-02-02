@@ -87,29 +87,9 @@ bool PHLBypass::setBypassOffsetC ()
 		before: 0f 84 cd 00 00 00
 		after:  e9 ce 00 00 00 90
 	*/
-	HexPattern hexPattern ({
-		0x55, 0x8B, 0xEC, 0x83,
-		0xE4, 0xF8, 0x83, 0xEC,
-		0x08,
-
-		0x80, 0x3D, 0xA6, 0x00,
-		0xD6, 0x01, 0x00,
-
-		0x53, 0x55, 0x56, 0x57,
-		0x0F
-	});
-
-	hexPattern.assignMask ({
-		0x01, 0x01, 0x01, 0x01,
-		0x01, 0x01, 0x01, 0x01,
-		0x01,
-
-		0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00,
-
-		0x01, 0x01, 0x01, 0x01,
-		0x01
-	});
+	HexPattern hexPattern ("55 8B EC 83 E4 F8 83 EC "
+						   "08 ?? ?? ?? ?? ?? ?? ?? "
+						   "53 55 56 57 0F");
 
 	bypassC = PHLMemory::findPattern (hexPattern);
 
@@ -146,10 +126,10 @@ void PHLBypass::printAddr ()
 
 bool PHLBypass::activateBypassA ()
 {
-	// Change jz 5 to jmp 5 to always jump
+	// Change jz 5 to nops so it returns
 	CodeCave cc =
 		CodeCave (bypassA,
-		{ 0xEB, 0x05 });
+		{ 0x90, 0x90 });
 	if (cc.createCodeCave ())
 	{
 		return true;
@@ -160,21 +140,21 @@ bool PHLBypass::activateBypassA ()
 bool PHLBypass::activateBypassB ()
 {
 	/*
-	Change jnz to jmp so it always jumps
-	25EA07
+		Change jnz to jmp so it always jumps
+		25EA07
 
-	To do this we change:
-	0F 85 9E 00 00 00
-	To:
-	E9 9F 00 00 00 90
+		To do this we change:
+		0F 85 9E 00 00 00
+		To:
+		E9 9F 00 00 00 90
 
-	It changes from 9E to 9F because we jump
-	relatively in bytes, and since we add a nop
-	after, we have to jump that extra nop byte
+		It changes from 9E to 9F because we jump
+		relatively in bytes, and since we add a nop
+		after, we have to jump that extra nop byte
 	*/
 
 	Addr entry = bypassB;
-	DWORD jumpDist = PHLMemory::readMemory (entry + 0x2) + 0x1;
+	DWORD jumpDist = PHLMemory::readAddr (entry + 0x2) + 0x1;
 
 	BYTE * bytes = (BYTE*)(&jumpDist);
 
@@ -199,7 +179,7 @@ bool PHLBypass::activateBypassC ()
 	*/
 
 	Addr entry = bypassC;
-	DWORD jumpDist = PHLMemory::readMemory (entry + 0x2) + 0x1;
+	DWORD jumpDist = PHLMemory::readAddr (entry + 0x2) + 0x1;
 
 	BYTE * bytes = (BYTE*)(&jumpDist);
 

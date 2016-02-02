@@ -123,12 +123,11 @@ void PHLInput::callPoEInputHandler (DWORD wParam, DWORD lParam,
 void PHLInput::setInputHandlerEntry ()
 {
 	inputHandlerEntry =
-		PHLMemory::findPattern (HexPattern ({
-		0x55, 0x8B, 0xEC, 0x83,
-		0xE4, 0xF8, 0x83, 0xEC,
-		0x4C, 0x53, 0x8B, 0x5D,
-		0x08, 0x56, 0x57, 0x8B
-	}));
+		PHLMemory::findPattern (HexPattern (
+			"55 8B EC 83 E4 F8 83 EC "
+			"?? 53 8B 5D 08 56 57 8B "
+			"7D 10"
+			));
 }
 
 void PHLInput::setBGPatchEntry ()
@@ -146,30 +145,26 @@ void PHLInput::setBGPatchEntry ()
 void PHLInput::setMouseHookEntry ()
 {
 	mouseHook =
-		PHLMemory::findPattern (HexPattern ({
-		0x8B, 0x44, 0x24, 0x18,
-		0x8B, 0x4C, 0x24, 0x1C,
-		0x89, 0x86, 0xE4, 0x0A,
-		0x00, 0x00, 0x89, 0x8E,
-		0xE8, 0x0A, 0x00, 0x00
-	}));
+		PHLMemory::findPattern (HexPattern (
+			"8B 44 24 18 8B 4C 24 1C "
+			"89 ?? E4 0A 00 00 89 ?? "
+			"E8 0A 00 00"
+			));
 }
 
 void PHLInput::setKeyStatePtr ()
 {
-	keyStatePtr =
-		PHLMemory::findPattern (HexPattern ({
-		0x8B, 0x85, 0x80, 0x18,
-		0x00, 0x00, 0x8B, 0x80,
-		0x08, 0x01, 0x00, 0x00,
-		0x80, 0xB8, 0xE0, 0x07,
-		0x00, 0x00, 0x00, 0x74,
-		0x05, 0x80, 0x4C, 0x24,
-		0x1C, 0x02
-	}));
+	keyStatePtr = 0x2 +
+		PHLMemory::findPattern (HexPattern (
+			"8B 35 ?? ?? ?? ?? ?? ??"
+			"?? ?? ?? ?? 6A 11 FF D6"
+			"66 85 C0 ?? ?? ?? ?? ??"
+			"?? 8B ?? 0C 8B ?? 04 8B"
+			"?? ?? ?? 00 00 8B ?? ??"
+			"?? 00 00 83 ?? F7"
+			));
 
-	keyStatePtr -= 0xE;
-	keyStatePtr = PHLMemory::readMemory (keyStatePtr);
+	keyStatePtr = PHLMemory::readAddr (keyStatePtr);
 }
 
 void PHLInput::enableInputInBackground ()
