@@ -1,4 +1,5 @@
 #include "PHLPlayer.h"
+#include "../PHLConsole.h"
 
 #define BASE_STRUCT_SEARCH_OFFSET 0xF
 #define PLAYER_STRUCT_OFFSET 0x1720
@@ -8,8 +9,15 @@
 
 #pragma region player_stats
 
-#define PLAYER_STAT_STRUCT_OFFSET_1 0x44
-#define PLAYER_STAT_STRUCT_OFFSET_2 0x904
+#define PLAYER_DEF_OFFSET_1 0x44
+#define PLAYER_DEF_OFFSET_2 0x904
+
+#define PLAYER_STAT_OFFSET_1 0x44
+#define PLAYER_STAT_OFFSET_2 0x900
+#define PLAYER_STAT_OFFSET_3 0x4
+#define PLAYER_STAT_OFFSET_4 0x4
+#define PLAYER_STAT_OFFSET_5 0x4
+#define PLAYER_STAT_OFFSET_6 0x2C
 
 #define PLAYER_MAX_HP_OFFSET 0x10
 #define PLAYER_CUR_HP_OFFSET 0x14
@@ -65,27 +73,103 @@ void PHLPlayer::printAddr ()
 		mouseY, mouseY - base);
 }
 
-Addr PHLPlayer::getPlayerStatAddr ()
+int * PHLPlayer::getPlayerStatsPtr () const
 {
-	Addr playerStat = playerStruct;
+	Addr playerStatsPtr = PHLMemory::readAddr (playerStruct);
 
-	if (!isAddressValid (playerStat))
+	playerStatsPtr = PHLMemory::readAddr (playerStatsPtr +
+										  PLAYER_STAT_OFFSET_1);
+	playerStatsPtr = PHLMemory::readAddr (playerStatsPtr +
+										  PLAYER_STAT_OFFSET_2);
+	playerStatsPtr = PHLMemory::readAddr (playerStatsPtr +
+										  PLAYER_STAT_OFFSET_3);
+	playerStatsPtr = PHLMemory::readAddr (playerStatsPtr +
+										  PLAYER_STAT_OFFSET_4);
+	playerStatsPtr = PHLMemory::readAddr (playerStatsPtr +
+										  PLAYER_STAT_OFFSET_5);
+	playerStatsPtr = PHLMemory::readAddr (playerStatsPtr +
+										  PLAYER_STAT_OFFSET_6);
+
+	if (!playerStatsPtr)
 	{
-		PHLConsole::printError ("Player Struct Ptr is invalid, bad address or "
-								"player stats haven't loaded yet");
+		return nullptr;
+	}
+
+	return (int *)playerStatsPtr;
+}
+
+int PHLPlayer::getPlayerStat (PlayerStatCode code) const
+{
+	int * playerStatsArr = getPlayerStatsPtr ();
+
+	int index = 0;
+	while (playerStatsArr[index] < code)
+	{
+		index += 2;
+	}
+
+	if (playerStatsArr[index] == code)
+	{
+		return playerStatsArr[index + 1];
+	}
+
+	return NULL;
+}
+
+Addr PHLPlayer::getPlayerDefenseAddr () const
+{
+	Addr defAddr = PHLMemory::readAddr (playerStruct);
+	defAddr = PHLMemory::readAddr (defAddr +
+								   PLAYER_DEF_OFFSET_1);
+	defAddr = PHLMemory::readAddr (defAddr +
+								   PLAYER_DEF_OFFSET_2);
+
+	if (!defAddr)
+	{
 		return NULL;
 	}
 
-	playerStat = PHLMemory::readAddr (playerStat)+
-		PLAYER_STAT_STRUCT_OFFSET_1;
+	return defAddr;
+}
 
-	if (!isAddressValid (playerStat))
+int PHLPlayer::getPlayerDefense (int offset) const
+{
+	Addr playerDef = getPlayerDefenseAddr ();
+	if (!isAddressValid (playerDef))
 	{
-		PHLConsole::printError ("Player Struct Ptr is invalid, bad address or "
-								"player stats haven't loaded yet");
 		return NULL;
 	}
 
-	return PHLMemory::readAddr (playerStat)+
-		PLAYER_STAT_STRUCT_OFFSET_2;
+	return PHLMemory::readAddr (playerDef +
+								offset);
+}
+
+int PHLPlayer::getCurHealth () const
+{
+	return getPlayerDefense (PLAYER_CUR_HP_OFFSET);
+}
+
+int PHLPlayer::getMaxHealth () const
+{
+	return getPlayerDefense (PLAYER_MAX_HP_OFFSET);
+}
+
+int PHLPlayer::getCurMana () const
+{
+	return getPlayerDefense (PLAYER_CUR_MANA_OFFSET);
+}
+
+int PHLPlayer::getMaxMana () const
+{
+	return getPlayerDefense (PLAYER_MAX_MANA_OFFSET);
+}
+
+int PHLPlayer::getCurES () const
+{
+	return getPlayerDefense (PLAYER_CUR_ES_OFFSET);
+}
+
+int PHLPlayer::getMaxES () const
+{
+	return getPlayerDefense (PLAYER_MAX_ES_OFFSET);
 }

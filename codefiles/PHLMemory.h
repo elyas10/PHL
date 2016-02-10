@@ -1,13 +1,10 @@
 #pragma once
 
 #include <Windows.h>
-#include <Psapi.h>
 #include <stdio.h>
 #include <initializer_list>
 #include <string>
 #include <vector>
-
-#include "PHLConsole.h"
 
 #define PHL_MAX_ARRAY_SIZE 128
 #define HWND_PATTERN_SEARCH_OFFSET 0x1FE
@@ -74,15 +71,13 @@ public:
 // Does simple memory operations
 class PHLMemory
 {
-private:
 	static PHLMemory * phlMem;
 
 	PHLMemory ();
 	~PHLMemory ();
-	PHLMemory (PHLMemory const &)
-	{};
-	PHLMemory & operator=(PHLMemory const &)
-	{};
+	PHLMemory(PHLMemory const&);
+
+	PHLMemory& operator=(PHLMemory const&);
 
 public:
 	// Initializes member variables
@@ -92,8 +87,6 @@ public:
 	Addr base;
 	// Size of main module of process
 	DWORD moduleSize;
-	// Window Handle
-	DWORD hWnd;
 
 	// Flips byte order for changing little endian
 	// to big endian and vice-versa
@@ -132,12 +125,15 @@ public:
 template <class Derived>
 class PHLHack
 {
-private:
 	static Derived * phlClass;
 protected:
 	PHLHack ()
 	{};
 public:
+	virtual ~PHLHack()
+	{
+	}
+
 	static Derived * Instance ()
 	{
 		if (!phlClass)

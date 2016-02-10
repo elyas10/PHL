@@ -2,20 +2,19 @@
 #include <io.h>
 #include <fcntl.h>
 #include <Windows.h>
-#include <Psapi.h>
 #include <stdio.h>
 
-FILE * PHLConsole::fileHandleOut = NULL;
-FILE * PHLConsole::fileHandleIn = NULL;
-HANDLE PHLConsole::handleOut = NULL;
-HANDLE PHLConsole::handleIn = NULL;
+FILE * PHLConsole::fileHandleOut = nullptr;
+FILE * PHLConsole::fileHandleIn = nullptr;
+HANDLE PHLConsole::handleOut = nullptr;
+HANDLE PHLConsole::handleIn = nullptr;
 
 bool PHLConsole::mainConsole = false;
 
 PHLConsole::PHLConsole (PHLConsole const & other)
 {}
 
-PHLConsole & PHLConsole::operator=(PHLConsole & other)
+PHLConsole & PHLConsole::operator=(PHLConsole & other) const
 {
 	return other;
 }
@@ -39,7 +38,7 @@ void PHLConsole::init ()
 
 		AllocConsole ();
 
-		int crt = 0;
+		int crt;
 
 		handleOut = GetStdHandle (STD_OUTPUT_HANDLE);
 		crt = _open_osfhandle ((long)handleOut, _O_TEXT);

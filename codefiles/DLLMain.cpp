@@ -2,6 +2,8 @@
 #include "hacks/PHLInput.h"
 #include "hacks/PHLBypass.h"
 #include "hacks/PHLMap.h"
+#include "hacks/PHLD3DRender.h"
+#include "PHLConsole.h"
 
 DWORD WINAPI init (LPVOID)
 {
@@ -19,14 +21,21 @@ DWORD WINAPI init (LPVOID)
 	PHLConsole::printLog ("\nActivating bypass...\n");
 	PHLBypass::Instance ()->printAddr ();
 
+	PHLConsole::printLog ("\nHooking D3D...\n");
+	PHLD3DRender::Instance ()->printAddr();
+
 	PHLConsole::printLog ("\nDone\n\n");
+
 
 	int x = 1, y = 1;
 	PHLConsole::printLog ("To left click at a location, type "
-						  "\"x, y\" then press enter... (DON'T FORGET THE COMMA)\n");
+						  "\"x y\" then press enter... (No Comma)\n");
+
+	PHLD3DText hello ("TEST", 300, 300, 0, 255, 0, 0, 255);
+
 	while (x != 0 && y != 0)
 	{
-		PHLConsole::scanLog ("%d, %d", &x, &y);
+		PHLConsole::scanLog (" %d %d", &x, &y);
 		input->sendPoEMouseInput (0x200, x, y, 4);
 		input->sendPoEMouseInput (0x201, x, y, 4);
 	}

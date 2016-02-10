@@ -1,4 +1,6 @@
 #include "PHLMemory.h"
+#include "PHLConsole.h"
+#include <Psapi.h>
 
 PHLMemory * PHLMemory::phlMem = nullptr;
 
@@ -140,14 +142,10 @@ HexPattern::HexPattern (std::string aob)
 	for (unsigned int i = 0;
 	i < string.size (); i++, length++)
 	{
-		if (string[i] == '?' ||
-			string[i] == 'x' ||
-			string[i] == 'X')
+		if (string[i] == '?')
 		{
 			i++;
-			if (string[i] != '?' &&
-				string[i] != 'x' &&
-				string[i] != 'X')
+			if (string[i] != '?')
 			{
 				PHLConsole::printError ("Invalid string of "
 										"bytes given for "
@@ -164,9 +162,7 @@ HexPattern::HexPattern (std::string aob)
 			buffer = buffer << 4;
 
 			i++;
-			if (string[i] == '?' ||
-				string[i] == 'x' ||
-				string[i] == 'X')
+			if (string[i] == '?')
 			{
 				PHLConsole::printError ("Invalid string of "
 										"bytes given for "
@@ -256,7 +252,7 @@ DWORD PHLMemory::changeMemory (Addr addr, DWORD value)
 		return NULL;
 	}
 
-	DWORD oldPermission = NULL;
+	DWORD oldPermission;
 	DWORD newPermission = PAGE_EXECUTE_READWRITE;
 
 	if (!VirtualProtect ((BYTE*)addr, 0x4,
@@ -282,7 +278,6 @@ DWORD PHLMemory::changeMemory (Addr addr, DWORD value)
 
 DWORD PHLMemory::readAddr (Addr addr)
 {
-
 	if (!isAddressValid (addr))
 	{
 		PHLConsole::printError ("Failed to read memory "
@@ -290,29 +285,7 @@ DWORD PHLMemory::readAddr (Addr addr)
 		return NULL;
 	}
 
-	DWORD value = 0;
-
-	DWORD oldPermission = NULL;
-	DWORD newPermission = PAGE_EXECUTE_READWRITE;
-
-	if (!VirtualProtect ((BYTE*)addr, 0x4,
-						 newPermission, &oldPermission))
-	{
-		PHLConsole::printError ("Failed to get permission reading memory");
-		return NULL;
-	}
-
-	value = *(DWORD*)(addr);
-
-	if (!VirtualProtect ((BYTE*)addr, 0x4,
-						 oldPermission, &newPermission))
-	{
-		PHLConsole::printError ("Failed to restore permission "
-								"after reading memory region");
-		return NULL;
-	}
-
-	return value;
+	return *(DWORD*)(addr);
 }
 
 void PHLMemory::hookAddr (Addr entryAddr, BYTE patchSize,
@@ -376,14 +349,14 @@ Addr PHLMemory::findPattern (HexPattern pattern)
 	{
 		if (pattern.mask[i])
 		{
-			PHLConsole::printLog ("%x, ", pattern.pattern[i]);
+			PHLConsole::printLog ("%.2X, ", pattern.pattern[i]);
 		}
 		else
 		{
 			PHLConsole::printLog ("??, ", pattern.pattern[i]);
 		}
 	}
-	PHLConsole::printLog ("%x !!!", pattern.pattern[length - 1]);
+	PHLConsole::printLog ("%.2X !!!", pattern.pattern[length - 1]);
 
 	return NULL;
 }
@@ -413,8 +386,8 @@ int PHLMemory::findPattern (BYTE * source,
 	PHLConsole::printError ("Failed to find pattern:");
 	for (unsigned short i = 0; i < sourceLength - 1; i++)
 	{
-		PHLConsole::printLog ("%x, ", source[i]);
+		PHLConsole::printLog ("%.2X, ", source[i]);
 	}
-	PHLConsole::printLog ("%x !!!", source[sourceLength - 1]);
+	PHLConsole::printLog ("%.2X !!!", source[sourceLength - 1]);
 	return NULL;
 }

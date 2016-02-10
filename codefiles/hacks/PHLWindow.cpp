@@ -1,8 +1,9 @@
 #include "PHLWindow.h"
+#include "../PHLConsole.h"
 
 PHLWindow::PHLWindow ()
 {
-	hWnd = HWND_PATTERN_SEARCH_OFFSET +
+	Addr hWnd = HWND_PATTERN_SEARCH_OFFSET +
 		PHLMemory::findPattern (HexPattern ({
 		0x8B, 0x06, 0xF3, 0x0F,
 		0x7E, 0x44, 0x24, 0x10,
@@ -16,7 +17,7 @@ PHLWindow::PHLWindow ()
 		0x10, 0x47, 0x83, 0xC3
 	}));
 	PHLMemory::reverseByteOrder (hWnd);
-	hWnd = *(Addr*)hWnd;
+	this->hWnd = (HWND)PHLMemory::readAddr(hWnd);
 }
 
 void PHLWindow::printAddr ()

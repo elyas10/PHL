@@ -8,8 +8,8 @@ private:
 	PHLWindow ();
 public:
 	friend class PHLHack<PHLWindow>;
-	void printAddr ();
+	void printAddr () override;
 
 	// Window handle
-	DWORD hWnd;
+	HWND hWnd;
 };

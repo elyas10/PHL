@@ -8,14 +8,13 @@ typedef char(__thiscall * PoEWindowHandlerFuncPtr)
 
 class PHLInput : public PHLHack<PHLInput>
 {
-private:
 	PHLInput ();
 	~PHLInput ();
 	
 	void sendPoEInput (int mouseX, int mouseY, int errorMargin,
 					   DWORD wParam, DWORD lParam, DWORD message);
 	void callPoEInputHandler (DWORD wParam, DWORD lParam,
-							  DWORD message);
+							  DWORD message) const;
 
 	// Prepare the hacks
 	void setInputHandlerEntry ();
@@ -67,5 +66,5 @@ public:
 	void unlockInput();
 	void enableKey(BYTE vkCode);
 	void disableKey(BYTE vkCode);
-	void printAddr ();
+	void printAddr () override;
 };

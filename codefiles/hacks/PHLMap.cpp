@@ -1,4 +1,5 @@
 #include "PHLMap.h"
+#include "../PHLConsole.h"
 
 #define MAP_HACK_OFFSET_1 0x01;
 #define MAP_HACK_OFFSET_2 0x10;

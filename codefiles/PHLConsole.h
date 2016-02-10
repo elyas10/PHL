@@ -6,11 +6,10 @@
 // static class
 class PHLConsole
 {
-private:
 	// Make a singleton class
 	PHLConsole();
 	PHLConsole(PHLConsole const & other);
-	PHLConsole & operator=(PHLConsole & other);
+	PHLConsole & operator=(PHLConsole & other) const;
 	
 	static bool PHLConsole::mainConsole;
 

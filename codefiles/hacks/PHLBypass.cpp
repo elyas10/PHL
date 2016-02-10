@@ -1,4 +1,5 @@
 #include "PHLBypass.h"
+#include "../PHLConsole.h"
 
 PHLBypass * PHLBypass::phlBypass = nullptr;
 

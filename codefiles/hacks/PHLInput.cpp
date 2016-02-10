@@ -1,7 +1,8 @@
-#include "PHLPlayer.h"
 #include "PHLInput.h"
-#include <TlHelp32.h>
+#include "PHLPlayer.h"
+#include "PHLWindow.h"
 #include <tchar.h>
+#include "../PHLConsole.h"
 
 #define MOUSE_HOOK_CODE_CAVE_SIZE 0x8
 #define POE_INPUT_LAG 6
@@ -102,11 +103,15 @@ void PHLInput::sendPoEInput (int mouseX, int mouseY,
 }
 
 void PHLInput::callPoEInputHandler (DWORD wParam, DWORD lParam,
-									DWORD message)
+									DWORD message) const
 {
-	Addr hWnd = PHLMemory::Instance ()->hWnd;
+	// Variables are used in assembly
+	// ReSharper disable once CppEntityNeverUsed
+	HWND hWnd = PHLWindow::Instance ()->hWnd;
+	// ReSharper disable once CppEntityNeverUsed
 	Addr gameStruct =
 		PHLPlayer::Instance ()->gameStruct;
+	// ReSharper disable once CppEntityNeverUsed
 	Addr addr = inputHandlerEntry;
 
 	__asm
@@ -195,7 +200,7 @@ void PHLInput::hookMouse ()
 DWORD PHLInput::getMouseLoc (int x, int y)
 {
 	POINT p = { x, y };
-	ClientToScreen ((HWND)PHLMemory::Instance ()->hWnd,
+	ClientToScreen (PHLWindow::Instance ()->hWnd,
 					&p);
 	DWORD mouseLoc = 0x0;
 	mouseLoc |= HIWORD (p.x << 16);
